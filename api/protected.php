@@ -1,4 +1,8 @@
 <?php
+include_once('./cors.php');
+?>
+
+<?php
 include_once './config/database.php';
 require "../vendor/autoload.php";
 use \Firebase\JWT\JWT;
