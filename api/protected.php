@@ -1,58 +1,42 @@
 <?php
-include_once('./cors.php');
-?>
+    include_once('./config/cors.php');
+    include_once('./config/ClassConection.php');
+    require "../vendor/autoload.php";
+    use \Firebase\JWT\JWT;
 
-<?php
-include_once './config/database.php';
-require "../vendor/autoload.php";
-use \Firebase\JWT\JWT;
+    header("Content-Type: application/json; charset=UTF-8");
+    header("Access-Control-Allow-Methods: POST");
+    header("Access-Control-Max-Age: 3600");
+    header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 
-header("Access-Control-Allow-Origin: *");
-header("Content-Type: application/json; charset=UTF-8");
-header("Access-Control-Allow-Methods: POST");
-header("Access-Control-Max-Age: 3600");
-header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+    $secret_key = "YOUR_SECRET_KEY";
+    $jwt = null;
 
+    $databaseService = new ClassConection();
+    $conn = $databaseService->getConnection();
 
-$secret_key = "YOUR_SECRET_KEY";
-$jwt = null;
-$databaseService = new DatabaseService();
-$conn = $databaseService->getConnection();
+    $data = json_decode(file_get_contents("php://input"));
 
-$data = json_decode(file_get_contents("php://input"));
+    $authHeader = $_SERVER['HTTP_AUTHORIZATION'];
 
+    $arr = explode(" ", $authHeader);
 
-$authHeader = $_SERVER['HTTP_AUTHORIZATION'];
+    $jwt = $arr[1];
 
-$arr = explode(" ", $authHeader);
-
-
-/*echo json_encode(array(
-    "message" => "sd" .$arr[1]
-));*/
-
-$jwt = $arr[1];
-
-if($jwt){
- 
-    try {
- 
-        $decoded = JWT::decode($jwt, $secret_key, array('HS256'));
-
-        echo json_encode(array(
-            "message" => "Access granted: ".$jwt,
-            "error" => $e->getMessage()
-        ));
- 
-    }catch (Exception $e){
- 
-    http_response_code(401);
- 
-    echo json_encode(array(
-        "message" => "Access denied.",
-        "error" => $e->getMessage()
-    ));
-}
- 
-}
+    if($jwt){
+        try {
+            $decoded = JWT::decode($jwt, $secret_key, array('HS256'));
+            echo json_encode(array(
+                "message" => "Access granted: ".$jwt,
+                "error" => $e->getMessage()
+            ));
+    
+        } catch (Exception $e) {
+            http_response_code(401);
+            echo json_encode(array(
+                "message" => "Access denied.",
+                "error" => $e->getMessage()
+            ));
+        }
+    }
 ?>
