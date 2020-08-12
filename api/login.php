@@ -1,5 +1,5 @@
 <?php
-    include_once('./config/cors.php');
+    header("Access-Control-Allow-Origin: *");
     include_once('./config/ClassConection.php');
     require "../vendor/autoload.php";
     use \Firebase\JWT\JWT;
@@ -13,19 +13,17 @@
     $senha = '';
 
     $databaseService = new ClassConection();
-    $conn = $databaseService->getConnection();
+    $conn = $databaseService -> getConnection();
 
     $data = json_decode(file_get_contents("php://input"));
 
-    $login = $data->login;
-    $senha = $data->senha;
+    $login = $data -> login;
+    $senha = $data -> senha;
 
-    $table_name = 'users';
-
-    $query = "SELECT * FROM " . $table_name . " WHERE login = ? LIMIT 0,1";
+    $query = "SELECT * FROM users WHERE login = :login LIMIT 0,1";
 
     $stmt = $conn->prepare( $query );
-    $stmt->bindParam(1, $login);
+    $stmt->bindParam(':login', $login);
     $stmt->execute();
     $num = $stmt->rowCount();
 
@@ -68,7 +66,8 @@
             http_response_code(401);
             echo json_encode(array("message" => "Login failed.", "senha" => $senha, "senha2" => $senha2));
         }
+    } else  {
+        http_response_code(401);
+        echo json_encode(array("message" => "Login failed.", "login" => $login));
     }
 ?>
-
-

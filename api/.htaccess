@@ -1,0 +1,22 @@
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+</IfModule>
+
+<IfModule mod_rewrite.c>
+	RewriteEngine on
+	# Bloqueia a listagem de diretórios.
+	Options All -Indexes
+
+	# Mensagem de erro personalizada.
+	ErrorDocument 403 "Desculpe! Acesso nao permitido
+	
+	RewriteCond %{http_host} ^http://protocolo.v2.api [nc]
+	RewriteRule ^(.*)$ https://protocolo.v2.api/$1 [r=301,nc]
+
+#Users
+	RewriteRule ^users/?$ /ClassUsers.php [NC]
+	RewriteRule ^protocolos/?$ /ClassProtocolos.php [NC]
+	
+#	RewriteRule ^([a-z0-9-]+)/?$ /index.html [NC]
+	
+</IfModule>
