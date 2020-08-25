@@ -15,7 +15,7 @@
 
 #Users
 	RewriteRule ^users/?$ /ClassUsers.php [NC]
-	RewriteRule ^protocolos/?$ /ClassProtocolos.php [NC]
+	RewriteRule ^protocolos/?$ /ClassProtocol.php [NC]
 	
 #	RewriteRule ^([a-z0-9-]+)/?$ /index.html [NC]
 	
