@@ -144,7 +144,7 @@
 
             $stmt = $this -> getConnection() -> prepare( $query );
             $stmt->bindParam(':data', $date);
-            $stmt->bindParam(':protocolo', $newProtocolNumber);
+            $stmt->bindParam(':protocolo', $protocolo);
             $stmt->bindParam(':origem', $origem);
             $stmt->bindParam(':dep_origem', $dep_origem);
             $stmt->bindParam(':destino', $destino);
@@ -164,7 +164,7 @@
 
                         $stmt2 = $this -> getConnection() -> prepare( $query2 );
                         $stmt2->bindParam(':data', $date);
-                        $stmt2->bindParam(':protocolo', $newProtocolNumber);
+                        $stmt2->bindParam(':protocolo', $protocolo);
                         $stmt2->bindParam(':origem', $origem);
                         $stmt2->bindParam(':dep_origem', $dep_origem);
                         $stmt2->bindParam(':destino', $destino_copia);
@@ -181,7 +181,7 @@
                     }
                 }
                 http_response_code(200);
-                echo json_encode(["protocolo" => $newProtocolNumber]);
+                echo json_encode(["protocolo" => $protocolo]);
             } else {
                 http_response_code(400);
                 echo json_encode(["message" => "Unable to register the protocol", "sql" => $query]);
