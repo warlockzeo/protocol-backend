@@ -32,9 +32,9 @@
         $reg = $row['reg'];
         $nome = $row['nome'];
         $nivel = $row['nivel'];
-        $senha2 = $row['senha'];
+        $criptSenha = $row['criptSenha'];
         
-        if(password_verify($senha, $senha2)) {
+        if(password_verify($senha, $criptSenha)) {
             $secret_key = "YOUR_SECRET_KEY";
             $issuer_claim = "THE_ISSUER";
             $audience_claim = "THE_AUDIENCE";
@@ -64,7 +64,7 @@
             );
         } else {
             http_response_code(401);
-            echo json_encode(array("message" => "Login failed.", "senha" => $senha, "senha2" => $senha2));
+            echo json_encode(array("message" => "Login failed.", "senha" => $senha, "criptSenha" => $criptSenha));
         }
     } else  {
         http_response_code(401);
