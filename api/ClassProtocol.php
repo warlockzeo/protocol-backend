@@ -95,7 +95,7 @@
             }
         }
 
-        public function resendProtocol($data){
+        public function reSendProtocol($data){
             $date = date("Y/m/d - H:i:s");
 
             $reg = $data -> reg;
@@ -189,27 +189,6 @@
             }
         }
 
-        public function searchProtocol ($data) {
-            $search = $data -> search;
-            $query = "SELECT protocolo.*, origem.nome as origemNome, destino.nome as destinoNome FROM protocolo LEFT JOIN users as origem ON protocolo.origem=origem.reg LEFT JOIN users as destino ON protocolo.destino=destino.reg  WHERE protocolo = :search ORDER BY reg";
-
-            $stmt = $this -> getConnection() -> prepare( $query );
-            $stmt->bindParam(':search', $search);
-            $stmt -> execute();
-            $num = $stmt->rowCount();
-
-            if($num >= 1){
-                $resp = [];
-                while($row = $stmt -> fetch(PDO::FETCH_ASSOC)){
-                    array_push($resp, $row);
-                }
-                echo json_encode($resp);
-            }  else {
-                http_response_code(401);
-                echo json_encode(["message" => "Protocolo $search não encontrado encontrado."]);
-            }
-        }
-
         public function updateProtocolStatus ($data) {
             $reg = $data -> reg;
             $situacao = $data -> situacao;
@@ -237,6 +216,27 @@
                         print_r($stmt3->errorInfo());
                     }
                 }
+            }
+        }
+
+        public function searchProtocol ($data) {
+            $search = $data -> search;
+            $query = "SELECT protocolo.*, origem.nome as origemNome, destino.nome as destinoNome FROM protocolo LEFT JOIN users as origem ON protocolo.origem=origem.reg LEFT JOIN users as destino ON protocolo.destino=destino.reg  WHERE protocolo = :search ORDER BY reg";
+
+            $stmt = $this -> getConnection() -> prepare( $query );
+            $stmt->bindParam(':search', $search);
+            $stmt -> execute();
+            $num = $stmt->rowCount();
+
+            if($num >= 1){
+                $resp = [];
+                while($row = $stmt -> fetch(PDO::FETCH_ASSOC)){
+                    array_push($resp, $row);
+                }
+                echo json_encode($resp);
+            }  else {
+                http_response_code(401);
+                echo json_encode(["message" => "Protocolo $search não encontrado encontrado."]);
             }
         }
 
@@ -271,7 +271,40 @@
                 echo json_encode(["message" => "Nenhum protocolo encontrado.", "query" => $query]);
             }
         }
+
+        public function reportProtocol ($data) {
+            $origem = $data -> origem;
+            $destino = $data -> destino;
+            $status = $data -> status;
+            $de = $data -> de;
+            $ate = $data -> ate;
+
+            $query = "SELECT protocolo.*, origem.nome as origemNome, destino.nome as destinoNome FROM protocolo LEFT JOIN users as origem ON protocolo.origem=origem.reg LEFT JOIN users as destino ON protocolo.destino=destino.reg 
+            WHERE origem = :origem AND destino = :destino AND status = :status AND de = :de AND ate = :ate 
+            ORDER BY reg";
+
+            $stmt = $this -> getConnection() -> prepare( $query );
+            $stmt->bindParam(':origem', $origem);
+            $stmt->bindParam(':destino', $destino);
+            $stmt->bindParam(':status', $status);
+            $stmt->bindParam(':de', $de);
+            $stmt->bindParam(':ate', $ate);
+            $stmt -> execute();
+            $num = $stmt->rowCount();
+
+            if($num >= 1){
+                $resp = [];
+                while($row = $stmt -> fetch(PDO::FETCH_ASSOC)){
+                    array_push($resp, $row);
+                }
+                echo json_encode($resp);
+            }  else {
+                http_response_code(401);
+                echo json_encode(["message" => "Protocolo $search não encontrado encontrado."]);
+            }
+        }
     }
+
 
     $protocol = new ClassProtocol();
     require_once('utils/validateData.php');
@@ -292,7 +325,7 @@
             $protocol->updateProtocolStatus($data -> body);
             break;
         case "resend":
-            $protocol->resendProtocol($data -> body);
+            $protocol->reSendProtocol($data -> body);
             break;
         default:
             $protocol->addProtocol($data -> body);
