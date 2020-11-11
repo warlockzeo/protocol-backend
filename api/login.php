@@ -59,7 +59,7 @@
                 array(
                     "message" => "Successful login.",
                     "jwt" => $jwt,
-                    "expireAt" => "1day"
+                    "expireAt" => "1 day"
                 )
             );
         } else {

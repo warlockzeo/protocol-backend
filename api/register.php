@@ -28,7 +28,7 @@ $table_name = 'users';
 
 $query = "INSERT INTO " . $table_name . "
                 SET login = :login,
-                    senha = :senha,
+                    criptSenha = :senha,
                     nivel = :nivel,
                     nome = :nome";
 

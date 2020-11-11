@@ -84,7 +84,7 @@
         public function updatePassword($data){
             $id = $data -> id;
             $senha = password_hash($data -> senha, PASSWORD_BCRYPT);
-            $query = "UPDATE users SET senha = :senha WHERE reg = :id";
+            $query = "UPDATE users SET criptSenha = :senha WHERE reg = :id";
 
             $stmt = $this -> getConnection() -> prepare( $query );
             $stmt->bindParam(':id', $id);
@@ -105,7 +105,7 @@
             $nivel = $data -> nivel;
             $nome = $data -> nome;
 
-            $query = "INSERT INTO users SET login = :login, senha = :senha, nivel = :nivel, nome = :nome";
+            $query = "INSERT INTO users SET login = :login, criptSenha = :senha, nivel = :nivel, nome = :nome";
 
             $stmt = $this -> getConnection() -> prepare( $query );
             $stmt->bindParam(':login', $login);

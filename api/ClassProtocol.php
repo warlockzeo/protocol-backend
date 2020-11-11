@@ -4,6 +4,7 @@
     header("Access-Control-Allow-Methods: POST, PUT, GET, DELETE, OPTIONS");
 
     require_once('./config/ClassConection.php');
+    require_once('utils/validateData.php');
     
     class ClassProtocol extends ClassConection {
         public function addProtocol($data){
@@ -273,22 +274,41 @@
         }
 
         public function reportProtocol ($data) {
-            $origem = $data -> origem;
-            $destino = $data -> destino;
-            $status = $data -> status;
+            //modelo de sql funcionando para relatório
+            /* SELECT protocolo.*, origem.nome as origemNome, destino.nome as destinoNome FROM protocolo 
+            LEFT JOIN users as origem ON (protocolo.origem=origem.reg OR protocolo.origem=origem.nome) 
+            LEFT JOIN users as destino ON (protocolo.destino=destino.reg OR protocolo.destino=destino.nome) 
+            WHERE (origem = 'rogeria' OR destino = 'rogeria' OR origem = '37' OR destino='37') 
+            AND data >= '2013-11-01, 00:00:00' AND data <= '2020-10-13, 23:59:00' ORDER BY protocolo, reg
+            */
+
+            $where = "";
+            $secretaria = $data -> secretaria;
+            $secretariaNome = $data -> secretariaNome ? $data -> secretariaNome : "";
+            $situacao = $data -> situacao;
+
+            switch($situacao){
+                case "Enviados":
+                    $where = "(origem = '$secretaria' OR origem = '$secretariaNome')";
+                    break;
+                case "Recebidos":
+                    $where = "(destino = '$secretaria' OR destino = '$secretariaNome')";
+                    break;
+                case "Todos":
+                    $where = $secretaria != "Todos" ? "(origem = '$secretaria' OR origem = '$secretariaNome' OR destino = '$secretaria' OR destino = '$secretariaNome')" : "";
+                    break;
+                default:
+                    $where = $secretaria != "Todos" ? "( $situacaoField ) AND (origem = '$secretaria' OR origem = '$secretariaNome' OR destino = '$secretaria' OR destino = '$secretariaNome')" : "situacao = '$situacao'";
+            }
+             
+            $where .= $where != "" ? " AND " : "";
             $de = $data -> de;
+            $where .= "data >= '$de, 00:00:00'";
             $ate = $data -> ate;
+            $where .= " AND data <= '$ate, 23:59:00'";
 
-            $query = "SELECT protocolo.*, origem.nome as origemNome, destino.nome as destinoNome FROM protocolo LEFT JOIN users as origem ON protocolo.origem=origem.reg LEFT JOIN users as destino ON protocolo.destino=destino.reg 
-            WHERE origem = :origem AND destino = :destino AND status = :status AND de = :de AND ate = :ate 
-            ORDER BY reg";
-
+            $query = "SELECT protocolo.*, origem.nome as origemNome, destino.nome as destinoNome FROM protocolo LEFT JOIN users as origem ON protocolo.origem=origem.reg LEFT JOIN users as destino ON protocolo.destino=destino.reg WHERE $where ORDER BY protocolo, reg";
             $stmt = $this -> getConnection() -> prepare( $query );
-            $stmt->bindParam(':origem', $origem);
-            $stmt->bindParam(':destino', $destino);
-            $stmt->bindParam(':status', $status);
-            $stmt->bindParam(':de', $de);
-            $stmt->bindParam(':ate', $ate);
             $stmt -> execute();
             $num = $stmt->rowCount();
 
@@ -297,17 +317,18 @@
                 while($row = $stmt -> fetch(PDO::FETCH_ASSOC)){
                     array_push($resp, $row);
                 }
+                //var_dump($resp);
+                $resp = validateData($resp);
                 echo json_encode($resp);
             }  else {
                 http_response_code(401);
-                echo json_encode(["message" => "Protocolo $search não encontrado encontrado."]);
+                echo json_encode(["message" => "Nenhum protocolo encontrado.", "sql" => $query]);
             }
         }
     }
 
 
     $protocol = new ClassProtocol();
-    require_once('utils/validateData.php');
     $data = json_decode(file_get_contents("php://input"));
     validateData($data);
 
@@ -326,6 +347,9 @@
             break;
         case "resend":
             $protocol->reSendProtocol($data -> body);
+            break;
+        case "report":
+            $protocol->reportProtocol($data -> body);
             break;
         default:
             $protocol->addProtocol($data -> body);

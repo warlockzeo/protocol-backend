@@ -4,15 +4,30 @@
         return $result;
     }
 
+    function cleaningString ($data){
+        $charset = mb_detect_encoding($data, 'auto');
+        $charsetToUse = $charset === "UTF-8" ? "" : "ISO-8859-1";
+        $htmlentitiesconverted = htmlentities($data, ENT_NOQUOTES, $charsetToUse, false);
+        $htmlentitiesconverted = html_entity_decode($htmlentitiesconverted, ENT_DISALLOWED, 'UTF-8');
+        
+        $result = strip_tags(trim($htmlentitiesconverted));
+
+        return $result;
+    }
+
     function validateData ($data) {
         if(is_array($data) || is_object($data)) {
-            foreach($data as $d){
-                validateData($d);
+            $ret = [];
+            foreach($data as $k => $v){
+                $ret[$k] = validateData($v);
             }
+            return $ret;
+
         } elseif(is_numeric($data)) {
             return $data;
         } else {
-            return cleaning($data);
+            //echo cleaningString($data);
+            return cleaningString($data);
         }
     }
 
