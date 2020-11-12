@@ -234,6 +234,7 @@
                 while($row = $stmt -> fetch(PDO::FETCH_ASSOC)){
                     array_push($resp, $row);
                 }
+                $resp = validateData($resp);
                 echo json_encode($resp);
             }  else {
                 http_response_code(401);
@@ -266,6 +267,7 @@
                 while($row = $stmt -> fetch(PDO::FETCH_ASSOC)){                
                     array_push($resp, $row);
                 }
+                $resp = validateData($resp);
                 echo json_encode($resp);
             } else {
                 http_response_code(401);

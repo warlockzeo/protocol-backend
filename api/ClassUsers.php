@@ -4,7 +4,8 @@
     header("Access-Control-Allow-Methods: POST, PUT, GET, DELETE, OPTIONS");
 
     require_once('./config/ClassConection.php');
-    
+    require_once('utils/validateData.php');
+
     class ClassUsers extends ClassConection {
         public function listUsers(){
             $query = "SELECT reg as id, login, nome, nivel FROM users";
@@ -18,6 +19,7 @@
                 while($row = $stmt -> fetch(PDO::FETCH_ASSOC)){                
                     array_push($resp, $row);
                 }
+                $resp = validateData($resp);
                 echo json_encode($resp);
             } else {
                 http_response_code(401);
@@ -134,7 +136,6 @@
     }
   
     $users = new ClassUsers();
-    require_once('utils/validateData.php');
     $data = json_decode(file_get_contents("php://input"));
     validateData($data);
 

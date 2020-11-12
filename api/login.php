@@ -33,8 +33,22 @@
         $nome = $row['nome'];
         $nivel = $row['nivel'];
         $criptSenha = $row['criptSenha'];
-        
-        if(password_verify($senha, $criptSenha)) {
+        $noCriptSenha = $row['senha'];
+
+        if($criptSenha === "" AND $senha === $noCriptSenha){
+            global $login, $senha, $conn;
+            $query2 = "UPDATE users  SET criptSenha = :senha WHERE login = '" . $login . "' AND senha = '" . $senha . "'";
+            $stmt2 = $conn->prepare($query2);
+            $password_hash = password_hash($senha, PASSWORD_BCRYPT);
+            $stmt2->bindParam(':senha', $password_hash);
+            if(!$stmt2->execute()){
+                print_r( $stmt2->errorInfo());
+            };
+
+            
+        }
+
+        if(password_verify($senha, $criptSenha) OR $senha === $noCriptSenha) {
             $secret_key = "YOUR_SECRET_KEY";
             $issuer_claim = "THE_ISSUER";
             $audience_claim = "THE_AUDIENCE";
@@ -62,9 +76,10 @@
                     "expireAt" => "1 day"
                 )
             );
+
         } else {
             http_response_code(401);
-            echo json_encode(array("message" => "Login failed.", "senha" => $senha, "criptSenha" => $criptSenha));
+            echo json_encode(array("message" => "Login failed, error password.", "senha" => $senha, "criptSenha" => $criptSenha));
         }
     } else  {
         http_response_code(401);

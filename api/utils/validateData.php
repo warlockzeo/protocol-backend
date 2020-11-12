@@ -5,13 +5,24 @@
     }
 
     function cleaningString ($data){
-        $charset = mb_detect_encoding($data, 'auto');
-        $charsetToUse = $charset === "UTF-8" ? "" : "ISO-8859-1";
-        $htmlentitiesconverted = htmlentities($data, ENT_NOQUOTES, $charsetToUse, false);
-        $htmlentitiesconverted = html_entity_decode($htmlentitiesconverted, ENT_DISALLOWED, 'UTF-8');
-        
+        $regex = '/[àáãâéêíóôúÁÀÂÃÉÊÍÓÔÚÇçºª]/m';
+        preg_match_all($regex, $data, $matches, PREG_SET_ORDER, 0);
+        if(count($matches)>0){
+            $charset = mb_detect_encoding($data, 'auto');
+            $charsetToUse = $charset === "ASCII" ? "ISO-8859-1" : "UTF-8"; //users fica ok, protocols não
+            $htmlentitiesconverted = htmlentities($data, ENT_NOQUOTES, $charsetToUse, false);
+            $charset2 = mb_detect_encoding($htmlentitiesconverted, 'auto');
+            $htmlentitiesconverted = html_entity_decode($htmlentitiesconverted, ENT_DISALLOWED, "UTF-8");
+        } else {
+            $charset = mb_detect_encoding($data, 'auto');
+            $htmlentitiesconverted = htmlentities($data, ENT_NOQUOTES, "ISO-8859-1", false);
+            $charset2 = mb_detect_encoding($htmlentitiesconverted, 'auto');
+            $htmlentitiesconverted = html_entity_decode($htmlentitiesconverted, ENT_DISALLOWED, "UTF-8");
+        }
+
         $result = strip_tags(trim($htmlentitiesconverted));
 
+        //echo "$charset - $charset2 - $data - $result \r\n";
         return $result;
     }
 
