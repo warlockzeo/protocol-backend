@@ -5,28 +5,30 @@
     }
 
     function cleaningString ($data){
+        $charset = mb_detect_encoding($data, 'auto');
         $reg="";
-        $regex = '/[àáâéèêíóôúÁÀÂÈÉÊÍÓÔÚºª]/mx';
-        //$regex= '/[^0-9a-zA-Z- .,;:?!]+/mi';
+        $regex = '/[àáâãéèêíóõôúÁÃÀÂÈÉÊÍÓÔÚçÇºª´`\(\)]/mx';
+        $regex2= '/[^0-9a-zA-Z -.,;:?!àáâãéèêíóõôúÃÁÀÂÈÉÊÍÓÔÚçÇºª\/\(\)]+/m';
         preg_match_all($regex, $data, $matches, PREG_SET_ORDER, 0);
+		$data2 = preg_replace($regex2, "", $data);
+        $data2 = str_replace("”","",$data2);
+        //$data2 = str_replace("”","",$data);
         if(count($matches)>0){
             $reg="1";
-            $charset = mb_detect_encoding($data, 'auto');
             $charsetToUse = $charset === "ASCII" ? "ISO-8859-1" : "UTF-8"; //users fica ok, protocols não
-            $htmlentitiesconverted = htmlentities($data, ENT_NOQUOTES, $charsetToUse, false);
+			$htmlentitiesconverted = htmlentities($data2, ENT_NOQUOTES, $charsetToUse, false);
             $charset2 = mb_detect_encoding($htmlentitiesconverted, 'auto');
             if($htmlentitiesconverted === ""){
-                $htmlentitiesconverted = htmlentities($data, ENT_NOQUOTES, "ISO-8859-1", false);
+                $htmlentitiesconverted = htmlentities($data2, ENT_NOQUOTES, "ISO-8859-1", false);
             }
-            $htmlentitiesconverted = html_entity_decode($htmlentitiesconverted, ENT_DISALLOWED, "UTF-8");
+            $htmlentitiesconverted = html_entity_decode($htmlentitiesconverted, ENT_NOQUOTES, "UTF-8");
             
-            //echo "$charset - $charset2 - reg:$reg - $data - $htmlentitiesconverted \r\n";
+            //echo "$charset - $charset2 - reg:$reg  - $htmlentitiesconverted \r\n";
         } else {
             $reg="0";
-            $charset = mb_detect_encoding($data, 'auto');
-            $htmlentitiesconverted = htmlentities($data, ENT_NOQUOTES, "ISO-8859-1", false);
+            $htmlentitiesconverted = htmlentities($data2, ENT_NOQUOTES, "ISO-8859-1", false);
             $charset2 = mb_detect_encoding($htmlentitiesconverted, 'auto');
-            $htmlentitiesconverted = html_entity_decode($htmlentitiesconverted, ENT_DISALLOWED, "UTF-8");
+            $htmlentitiesconverted = html_entity_decode($htmlentitiesconverted, ENT_NOQUOTES, "UTF-8");
 
             //echo "$charset - $charset2 - reg:$reg - $data - $htmlentitiesconverted \r\n";
         }
@@ -50,6 +52,21 @@
         } else {
             //echo cleaningString($data);
             return cleaningString($data);
+        }
+    }
+
+
+    function validateDataIn ($data) {
+        if(is_array($data) || is_object($data)) {
+            $ret = [];
+            foreach($data as $k => $v){
+                $ret[$k] = validateData($v);
+            }
+            return $ret;
+        } elseif(is_numeric($data)) {
+            return $data;
+        } else {
+            return htmlentities($data, ENT_NOQUOTES, 'UTF-8', false);;
         }
     }
 

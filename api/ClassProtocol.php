@@ -12,9 +12,9 @@
             $newProtocolNumber = strtotime("now");
 
             $origem = $data -> origem;
-            $dep_origem = $data -> origemDepartamento;
+            $dep_origem = $data -> dep_origem;
             $destino = $data -> destino;
-            $dep_destino = $data -> destinoDepartamento;
+            $dep_destino = $data -> dep_destino;
 
             if(isset($data -> copia)){
                 $copia = implode(",", $data -> copia);
@@ -22,13 +22,13 @@
                 $copia = "";
             }
 
-            $portador = $data -> portadorNome;
-            $matricula = $data -> portadorMatricula;
+            $portador = $data -> portador;
+            $matricula = $data -> mat;
             
             if ($data -> carater === "outros") {
                 $carater = $data -> caraterOutros;
             } else {
-                $carater = $data -> carater;
+                $carater = htmlentities($data -> carater, ENT_NOQUOTES, 'UTF-8', false);
             }
 
             if(isset($data -> prazo)){
@@ -45,9 +45,9 @@
                 $doc = "";
             }
 
-            $obs = $data -> obs;
+            $obs = htmlentities($data -> obs, ENT_NOQUOTES, 'UTF-8', false);
 
-            $query = "INSERT INTO protocolo SET data = :data, protocolo = :protocolo, origem = :origem, dep_origem = :dep_origem, destino = :destino, dep_destino = :dep_destino, copia = :copia, portador = :portador, mat = :matricula, situacao = 'Em trânsito', carater = :carater, $prazoCampo doc = :doc, obs = :obs, ver = 1";
+            $query = "INSERT INTO protocolo SET data = :data, protocolo = :protocolo, origem = :origem, dep_origem = :dep_origem, destino = :destino, dep_destino = :dep_destino, copia = :copia, portador = :portador, mat = :matricula, situacao = 'Em tr&acirc;nsito', carater = :carater, $prazoCampo doc = :doc, obs = :obs, ver = 1";
 
             $stmt = $this -> getConnection() -> prepare( $query );
             $stmt->bindParam(':data', $date);
@@ -102,9 +102,9 @@
             $reg = $data -> reg;
             $protocolo = $data -> protocolo;
             $origem = $data -> origem;
-            $dep_origem = $data -> origemDepartamento;
+            $dep_origem = $data -> dep_origem;
             $destino = $data -> destino;
-            $dep_destino = $data -> destinoDepartamento;
+            $dep_destino = $data -> dep_destino;
 
             if(isset($data -> copia)){
                 $copia = implode(",", $data -> copia);
@@ -112,8 +112,8 @@
                 $copia = "";
             }
 
-            $portador = $data -> portadorNome;
-            $matricula = $data -> portadorMatricula;
+            $portador = $data -> portador;
+            $matricula = $data -> mat;
             
             if ($data -> carater === "outros") {
                 $carater = $data -> caraterOutros;
@@ -190,6 +190,66 @@
             }
         }
 
+        public function updateProtocol($data){
+            $reg = $data -> reg;
+            $protocolo = $data -> protocolo;
+            $destino = $data -> destino;
+            $dep_destino = $data -> dep_destino;
+
+            if(isset($data -> copia)){
+                $copia = implode(",", $data -> copia);
+            } else {
+                $copia = "";
+            }
+
+            $portador = $data -> portador;
+            $matricula = $data -> mat;
+            
+            if ($data -> carater === "outros") {
+                $carater = $data -> caraterOutros;
+            } else {
+                $carater = htmlentities($data -> carater, ENT_NOQUOTES, 'UTF-8', false);
+            }
+
+            if(isset($data -> prazo)){
+                $d = new DateTime($data -> prazo);
+                $prazo = $d -> format('Y-m-d');
+            } else {
+                $prazo = "";
+            }
+            $prazoCampo = $prazo ? "prazo = :prazo,": "";
+
+            if(isset($data -> documento)){
+                $doc = implode(",", $data -> documento);
+            } else {
+                $doc = "";
+            }
+
+            $obs = htmlentities($data -> obs, ENT_NOQUOTES, 'UTF-8', false);
+
+            $query = "UPDATE protocolo SET destino = :destino, dep_destino = :dep_destino, copia = :copia, portador = :portador, mat = :matricula, situacao = 'Em tr&acirc;nsito', carater = :carater, $prazoCampo doc = :doc, obs = :obs, ver = 1 WHERE reg = $reg";
+
+            $stmt = $this -> getConnection() -> prepare( $query );
+            $stmt->bindParam(':destino', $destino);
+            $stmt->bindParam(':dep_destino', $dep_destino);
+            $stmt->bindParam(':copia', $copia);
+            $stmt->bindParam(':portador', $portador);
+            $stmt->bindParam(':matricula', $matricula);
+            $stmt->bindParam(':carater', $carater);
+            if(!!$prazo){$stmt->bindParam(':prazo', $prazo);}
+            $stmt->bindParam(':doc', $doc);
+            $stmt->bindParam(':obs', $obs);
+
+            if($stmt -> execute()){
+                http_response_code(200);
+                echo json_encode(["protocolo" => $protocolo]);
+            } else {
+                http_response_code(400);
+                echo json_encode(["message" => "Não foi possível editar o protocolo $protocolo", "sql" => $query]);
+                print_r($stmt->errorInfo());
+            }
+        }
+
         public function updateProtocolStatus ($data) {
             $reg = $data -> reg;
             $situacao = $data -> situacao;
@@ -235,6 +295,7 @@
                     array_push($resp, $row);
                 }
                 $resp = validateData($resp);
+                http_response_code(200);
                 echo json_encode($resp);
             }  else {
                 http_response_code(401);
@@ -247,7 +308,7 @@
             $origemField = ($origem != "") ? " origem = '" . $origem . "'" : "";
             $destino = $data -> destino;
             $destinoField = ($destino != "") ? " destino = '" . $destino . "'" : "";
-            $situacao = $data -> situacao;
+            $situacao = htmlentities($data -> situacao, ENT_NOQUOTES, 'UTF-8', false);
             $copia = $data -> copia;
             $copiaField = ($copia === "copia") ? " AND copia = '" . $copia . "'" : "";
             $carater = $data -> carater;
@@ -268,6 +329,7 @@
                     array_push($resp, $row);
                 }
                 $resp = validateData($resp);
+                http_response_code(200);
                 echo json_encode($resp);
             } else {
                 http_response_code(401);
@@ -321,29 +383,50 @@
                 }
                 //var_dump($resp);
                 $resp = validateData($resp);
+                http_response_code(200);
                 echo json_encode($resp);
             }  else {
                 http_response_code(401);
                 echo json_encode(["message" => "Nenhum protocolo encontrado.", "sql" => $query]);
             }
         }
+
+        public function deleteProtocol ($data) {
+            $protocolo = $data -> protocolo;
+
+            $query = "DELETE from protocolo WHERE protocolo = $protocolo";
+            $stmt = $this -> getConnection() -> prepare( $query );
+            if($stmt -> execute()){
+                http_response_code(200);
+                echo json_encode(["message" => "success"]);
+            } else {
+                http_response_code(401);
+                echo json_encode(["message" => "Não foi possível excluir protocolo.", "sql" => $query]);
+            }
+            
+        }
     }
 
 
     $protocol = new ClassProtocol();
     $data = json_decode(file_get_contents("php://input"));
-    validateData($data);
 
     switch($_SERVER['REQUEST_METHOD']){
     case "POST":
         $options = $data -> option;
         switch($options){
+        case "delete":
+            $protocol->deleteProtocol($data -> body);
+            break;
         case "search":
             $protocol->searchProtocol($data -> body);
             break;
         case "list":
             $protocol->listProtocol($data -> body);
             break;
+        case "edit":
+            $protocol->updateProtocol($data -> body);
+            break;    
         case "update":
             $protocol->updateProtocolStatus($data -> body);
             break;
