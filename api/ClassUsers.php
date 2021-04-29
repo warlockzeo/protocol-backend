@@ -9,7 +9,7 @@
     class ClassUsers extends ClassConection {
         public function listUsers(){
             $query = "SELECT reg as id, login, nome, nivel FROM users";
-
+            
             $stmt = $this -> getConnection() -> prepare( $query );
             $stmt -> execute();
             $num = $stmt->rowCount();

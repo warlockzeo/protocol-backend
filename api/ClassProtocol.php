@@ -315,9 +315,10 @@
             $caraterField = ($carater != "") ? " AND carater = '" . $carater . "'" : "";
             $and = ($destino || $origem ? " AND " : "");
             $where = "WHERE $origemField $destinoField  $and situacao = '$situacao' AND ver = 1 $copiaField $caraterField";
+
             $query = "SELECT protocolo.*, origem.nome as origemNome, destino.nome as destinoNome FROM protocolo 
             LEFT JOIN users as origem ON protocolo.origem=origem.reg 
-            LEFT JOIN users as destino ON protocolo.destino=destino.reg $where ORDER BY protocolo DESC";
+            LEFT JOIN users as destino ON protocolo.destino=destino.reg $where ORDER BY protocolo DESC LIMIT 500";
 
             $stmt = $this -> getConnection() -> prepare( $query );
             $stmt -> execute();
@@ -371,7 +372,12 @@
             $ate = $data -> ate;
             $where .= " AND data <= '$ate, 23:59:00'";
 
-            $query = "SELECT protocolo.*, origem.nome as origemNome, destino.nome as destinoNome FROM protocolo LEFT JOIN users as origem ON protocolo.origem=origem.reg LEFT JOIN users as destino ON protocolo.destino=destino.reg WHERE $where ORDER BY protocolo, reg";
+            $length = $data -> length;
+            $page = $data -> page;
+            $start = $page == 1 ? 1 : $page * $length;
+            $limit = " LIMIT $start, $length " ;
+
+            $query = "SELECT protocolo.*, origem.nome as origemNome, destino.nome as destinoNome FROM protocolo LEFT JOIN users as origem ON protocolo.origem=origem.reg LEFT JOIN users as destino ON protocolo.destino=destino.reg WHERE $where ORDER BY protocolo, reg $limit";
             $stmt = $this -> getConnection() -> prepare( $query );
             $stmt -> execute();
             $num = $stmt->rowCount();
